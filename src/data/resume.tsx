@@ -38,12 +38,18 @@ export const DATA = {
 	],
 	navbar: [
 		{ href: '/', icon: HomeIcon, label: 'Home' },
-		{ href: '/blog', icon: NotebookIcon, label: 'Blog' },
+		// { href: '/blog', icon: NotebookIcon, label: 'Blog' },
 	],
 	contact: {
 		email: 'aminulhaque853@gmail.com',
 		tel: '+610432450337',
 		social: {
+			Medium: {
+				name: 'Blog',
+				url: 'https://medium.com/@aminul.haque.shihab',
+				icon: NotebookIcon,
+				navbar: true,
+			},
 			GitHub: {
 				name: 'GitHub',
 				url: 'https://github.com/AminulHaqueShihab',
@@ -88,7 +94,7 @@ export const DATA = {
 			start: 'Sep 2024',
 			end: 'Feb 2025',
 			description:
-				'Built full-stack apps using Next.js, ASP.NET, and PostgreSQL. Delivered ERP systems, optimized database queries, and refactored legacy codebases for security and performance.',
+				'I worked as a Software Engineer, developing and maintaining full-stack web applications using Next.js on the frontend and ASP.NET on the backend, with PostgreSQL for database operations. I collaborated closely with cross-functional teams to deliver scalable ERP systems tailored to client needs. My responsibilities included optimizing complex database queries and improving legacy codebases to enhance security, performance, and maintainability.',
 		},
 		{
 			company: 'Thinkcrypt.io',
@@ -100,7 +106,7 @@ export const DATA = {
 			start: 'Oct 2023',
 			end: 'Sep 2024',
 			description:
-				'Worked on platforms like e-commerce, ticketing, flight booking, POS, CMS, ERP. Used the MERN stack for both frontend and backend development, API integration, and secure architecture.',
+				'As a Software Engineer, I was responsible for building, deploying, and maintaining web applications across diverse domains such as e-commerce (single and multi-vendor), flight ticketing, event management, POS systems, inventory management, and ERP platforms. I developed both frontend and backend systems using the MERN stack and was actively involved in upgrading legacy projects and launching new ones from scratch, all while upholding high coding standards.',
 		},
 		{
 			company: 'Fiverr',
@@ -112,7 +118,7 @@ export const DATA = {
 			start: 'Jan 2020',
 			end: 'Present',
 			description:
-				'Built responsive websites, handled client projects, integrated payment gateways and APIs. Maintained 5-star rating for communication and delivery.',
+				'As a Freelance Web Developer, I delivered a variety of responsive websites and web applications tailored to client needs. I handled full project lifecycles — from requirement gathering to delivery — and consistently maintained a 5-star rating. I integrated third-party APIs, payment gateways, and CMS systems to ensure functionality and client satisfaction.',
 		},
 	],
 
@@ -142,6 +148,13 @@ export const DATA = {
 			dates: '2025',
 			active: true,
 			image: '/projects/bytelab.png',
+			images: [
+				'/projects/bytelab.png',
+				'/projects/bytelab-1.png',
+				'/projects/bytelab-2.png',
+				'/projects/bytelab-3.png',
+				'/projects/bytelab-4.png',
+			],
 			description:
 				'Full-featured education platform with separate CMS for instructors, parents and students, Class management, secure payment, and email automation.',
 			technologies: [
@@ -161,6 +174,15 @@ export const DATA = {
 			dates: '2024',
 			active: true,
 			image: '/projects/eventpro.png',
+			images: [
+				'/projects/eventpro.png',
+				'/projects/eventpro-1.png',
+				'/projects/eventpro-2.png',
+				'/projects/eventpro-3.png',
+				'/projects/eventpro-4.png',
+				'/projects/eventpro-5.png',
+				'/projects/eventpro-6.png',
+			],
 			description:
 				'Full-featured event ticketing platform with CMS, CRM, secure payment, PDF ticketing, and email automation.',
 			technologies: [
