@@ -134,7 +134,7 @@ export const DATA = {
 		{
 			school: 'Brac University',
 			href: 'https://bracu.ac.bd',
-			degree: 'BSc in Computer Science and Engineering (CGPA: 3.87/4.00)',
+			degree: 'BSc in Computer Science and Engineering',
 			logoUrl: '/logos/bracu-logo.png',
 			start: '2019',
 			end: '2022',
