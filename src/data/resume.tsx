@@ -41,7 +41,7 @@ export const DATA = {
 		// { href: '/blog', icon: NotebookIcon, label: 'Blog' },
 	],
 	contact: {
-		email: 'aminulhaque853@gmail.com',
+		email: 'mdaminul.career@gmail.com',
 		tel: '+610432450337',
 		social: {
 			Medium: {
