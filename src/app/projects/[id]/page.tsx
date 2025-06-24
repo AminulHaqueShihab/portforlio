@@ -37,7 +37,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 			<section className='w-full max-w-2xl mx-auto'>
 				{/* Back Button Row */}
 				<div className='flex items-center mb-2'>
-					<Link href='/'>
+					<Link href='/#projects'>
 						<button className='w-6 h-6 flex items-center justify-center rounded bg-background border shadow hover:bg-muted transition'>
 							<ChevronLeft className='w-4 h-4' />
 						</button>
