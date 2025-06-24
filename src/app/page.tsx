@@ -14,7 +14,7 @@ const BLUR_FADE_DELAY = 0.04;
 export default function Page() {
 	return (
 		<main className='flex flex-col min-h-[100dvh] space-y-10'>
-			<section id='hero'>
+			<header id='hero'>
 				<div className='mx-auto w-full max-w-2xl space-y-8'>
 					<div className='gap-2 flex justify-between'>
 						<div className='flex-col flex flex-1 space-y-1.5'>
@@ -29,17 +29,25 @@ export default function Page() {
 								delay={BLUR_FADE_DELAY}
 								text={DATA.description}
 							/>
+							<BlurFadeText
+								className='text-sm text-muted-foreground'
+								delay={BLUR_FADE_DELAY * 2}
+								text='Based in Sydney, Australia - Available for opportunities in Sydney and remote work'
+							/>
 						</div>
 						<BlurFade delay={BLUR_FADE_DELAY}>
 							<Avatar className='size-28 border'>
-								<AvatarImage alt={DATA.name} src={DATA.avatarUrl} />
+								<AvatarImage
+									alt={`${DATA.name} - Software Engineer Sydney`}
+									src={DATA.avatarUrl}
+								/>
 								<AvatarFallback>{DATA.initials}</AvatarFallback>
 							</Avatar>
 						</BlurFade>
 					</div>
 				</div>
-			</section>
-			<section id='about'>
+			</header>
+			<section id='about' aria-labelledby='about-heading'>
 				<BlurFade delay={BLUR_FADE_DELAY * 3}>
 					<h2 className='text-xl font-bold'>About</h2>
 				</BlurFade>
@@ -49,10 +57,12 @@ export default function Page() {
 					</Markdown>
 				</BlurFade>
 			</section>
-			<section id='work'>
+			<section id='work' aria-labelledby='work-heading'>
 				<div className='flex min-h-0 flex-col gap-y-3'>
 					<BlurFade delay={BLUR_FADE_DELAY * 5}>
-						<h2 className='text-xl font-bold'>Work Experience</h2>
+						<h2 id='work-heading' className='text-xl font-bold'>
+							Work Experience - Software Engineering
+						</h2>
 					</BlurFade>
 					{DATA.work.map((work, id) => (
 						<BlurFade
@@ -62,7 +72,7 @@ export default function Page() {
 							<ResumeCard
 								key={work.company}
 								logoUrl={work.logoUrl}
-								altText={work.company}
+								altText={`${work.company} - ${work.title}`}
 								title={work.company}
 								subtitle={work.title}
 								href={work.href}
@@ -74,10 +84,12 @@ export default function Page() {
 					))}
 				</div>
 			</section>
-			<section id='education'>
+			<section id='education' aria-labelledby='education-heading'>
 				<div className='flex min-h-0 flex-col gap-y-3'>
 					<BlurFade delay={BLUR_FADE_DELAY * 7}>
-						<h2 className='text-xl font-bold'>Education</h2>
+						<h2 id='education-heading' className='text-xl font-bold'>
+							Education - Computer Science
+						</h2>
 					</BlurFade>
 					{DATA.education.map((education, id) => (
 						<BlurFade
@@ -88,7 +100,7 @@ export default function Page() {
 								key={education.school}
 								href={education.href}
 								logoUrl={education.logoUrl}
-								altText={education.school}
+								altText={`${education.school} - ${education.degree}`}
 								title={education.school}
 								subtitle={education.degree}
 								period={`${education.start} - ${education.end}`}
@@ -97,10 +109,12 @@ export default function Page() {
 					))}
 				</div>
 			</section>
-			<section id='skills'>
+			<section id='skills' aria-labelledby='skills-heading'>
 				<div className='flex min-h-0 flex-col gap-y-3'>
 					<BlurFade delay={BLUR_FADE_DELAY * 9}>
-						<h2 className='text-xl font-bold'>Skills</h2>
+						<h2 id='skills-heading' className='text-xl font-bold'>
+							Technical Skills - Full Stack Development
+						</h2>
 					</BlurFade>
 					<div className='flex flex-wrap gap-1'>
 						{DATA.skills.map((skill, id) => (
@@ -111,7 +125,7 @@ export default function Page() {
 					</div>
 				</div>
 			</section>
-			<section id='projects'>
+			<section id='projects' aria-labelledby='projects-heading'>
 				<div className='space-y-12 w-full py-12'>
 					<BlurFade delay={BLUR_FADE_DELAY * 11}>
 						<div className='flex flex-col items-center justify-center space-y-4 text-center'>
@@ -119,13 +133,17 @@ export default function Page() {
 								<div className='inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm'>
 									My Projects
 								</div>
-								<h2 className='text-3xl font-bold tracking-tighter sm:text-5xl'>
-									Check out my latest work
+								<h2
+									id='projects-heading'
+									className='text-3xl font-bold tracking-tighter sm:text-5xl'
+								>
+									Software Engineering Projects
 								</h2>
 								<p className='text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
-									I&apos;ve worked on a variety of projects, from simple
-									websites to complex web applications. Here are a few of my
-									favorites.
+									I&apos;ve worked on a variety of software engineering
+									projects, from simple websites to complex web applications.
+									Here are a few of my favorites showcasing my full-stack
+									development skills.
 								</p>
 							</div>
 						</div>
@@ -144,8 +162,6 @@ export default function Page() {
 									dates={project.dates}
 									tags={project.technologies}
 									image={project?.image}
-									images={project?.images}
-									// video={project?.video || ''}
 									links={project?.links}
 								/>
 							</BlurFade>
@@ -153,7 +169,7 @@ export default function Page() {
 					</div>
 				</div>
 			</section>
-      {/* TODO: Add hackathons */}
+			{/* TODO: Add hackathons */}
 			{/* <section id='hackathons'>
 				<div className='space-y-12 w-full py-12'>
 					<BlurFade delay={BLUR_FADE_DELAY * 13}>
@@ -197,33 +213,39 @@ export default function Page() {
 					</BlurFade>
 				</div>
 			</section> */}
-			<section id='contact'>
+			<section id='contact' aria-labelledby='contact-heading'>
 				<div className='grid items-center justify-center gap-4 px-4 text-center md:px-6 w-full py-12'>
 					<BlurFade delay={BLUR_FADE_DELAY * 16}>
 						<div className='space-y-3'>
 							<div className='inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm'>
 								Contact
 							</div>
-							<h2 className='text-3xl font-bold tracking-tighter sm:text-5xl'>
+							<h2
+								id='contact-heading'
+								className='text-3xl font-bold tracking-tighter sm:text-5xl'
+							>
 								Get in Touch
 							</h2>
 							<p className='mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
-								Want to chat? Just shoot me a dm on{' '}
+								Want to chat? or looking for a Software
+								Engineer in Sydney? I&apos;m available for opportunities in
+								Sydney and remote work. Connect with me on{' '}
 								<Link
 									href={DATA?.contact?.social?.LinkedIn?.url || ''}
 									target='_blank'
 									rel='noopener noreferrer'
 									className='text-blue-500 hover:underline'
 								>
-								  LinkedIn
-								</Link>{' '} or {' '}
+									LinkedIn
+								</Link>{' '}
+								or{' '}
 								<Link
 									href={`mailto:${DATA?.contact?.email}`}
 									className='text-blue-500 hover:underline'
 								>
-									mail  
-								</Link> {' '}
-								me and I&apos;ll respond whenever I can.
+									email
+								</Link>{' '}
+								me and I&apos;ll respond as soon as possible.
 							</p>
 						</div>
 					</BlurFade>
