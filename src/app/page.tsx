@@ -65,7 +65,7 @@ export default function Page() {
 				<div className='flex min-h-0 flex-col gap-y-3'>
 					<BlurFade delay={BLUR_FADE_DELAY * 5}>
 						<h2 id='work-heading' className='text-xl font-bold'>
-							Work Experience - Software Engineering
+							Work Experience
 						</h2>
 					</BlurFade>
 					{DATA.work.map((work, id) => (
@@ -92,7 +92,7 @@ export default function Page() {
 				<div className='flex min-h-0 flex-col gap-y-3'>
 					<BlurFade delay={BLUR_FADE_DELAY * 7}>
 						<h2 id='education-heading' className='text-xl font-bold'>
-							Education - Computer Science
+							Education
 						</h2>
 					</BlurFade>
 					{DATA.education.map((education, id) => (
@@ -117,7 +117,7 @@ export default function Page() {
 				<div className='flex min-h-0 flex-col gap-y-3'>
 					<BlurFade delay={BLUR_FADE_DELAY * 9}>
 						<h2 id='skills-heading' className='text-xl font-bold'>
-							Technical Skills - Full Stack Development
+							Technical Skills
 						</h2>
 					</BlurFade>
 					<div className='flex flex-wrap gap-1'>
@@ -141,13 +141,12 @@ export default function Page() {
 									id='projects-heading'
 									className='text-3xl font-bold tracking-tighter sm:text-5xl'
 								>
-									Software Engineering Projects
+									Check out my latest work
 								</h2>
 								<p className='text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
-									I&apos;ve worked on a variety of software engineering
-									projects, from simple websites to complex web applications.
-									Here are a few of my favorites showcasing my full-stack
-									development skills.
+									I&apos;ve worked on a variety of projects, from simple
+									websites to complex web applications. Here are a few of my
+									favorites.
 								</p>
 							</div>
 						</div>
@@ -158,7 +157,7 @@ export default function Page() {
 								key={project.title}
 								delay={BLUR_FADE_DELAY * 12 + id * 0.05}
 							>
-								<Link href={`/projects/${project.id}`} >
+								<Link href={`/projects/${project.id}`}>
 									<ProjectCard
 										href={project.href}
 										key={project.title}
@@ -234,9 +233,9 @@ export default function Page() {
 								Get in Touch
 							</h2>
 							<p className='mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
-								Want to chat? or looking for a Software Engineer in Sydney?
-								I&apos;m available for opportunities in Sydney and remote work.
-								Connect with me on{' '}
+								Looking to connect or hire a Software Engineer in Sydney? I&apos;m
+								open to new opportunities—both onsite in Sydney and remote
+								roles. Let&apos;s chat! Reach out via{' '}
 								<Link
 									href={DATA?.contact?.social?.LinkedIn?.url || ''}
 									target='_blank'
@@ -251,8 +250,8 @@ export default function Page() {
 									className='text-blue-500 hover:underline'
 								>
 									email
-								</Link>{' '}
-								me and I&apos;ll respond as soon as possible.
+								</Link>{', '}
+								and I&apos;ll get back to you as soon as I can.
 							</p>
 						</div>
 					</BlurFade>
