@@ -143,6 +143,7 @@ export const DATA = {
 
 	projects: [
 		{
+      id: '1',
 			title: 'ByteLab - Education Platform',
 			href: 'https://bytelab.pro/',
 			dates: '2025',
@@ -167,8 +168,19 @@ export const DATA = {
 				'Nodemailer',
 			],
 			links: [],
+			features: [
+				'Role-based CMS for instructors, students, and parents',
+				'Class management: create, schedule, class notes, and track classes',
+				'Secure payments via SSLCommerz',
+				'Automated emails for notifications and updates using Nodemailer',
+				'Public-facing Next.js website for visitors and promotions',
+				'Centralized state management with Redux Toolkit',
+				'PostgreSQL + Prisma for robust and scalable database handling',
+				'Built with modern, scalable architecture using Next.js (frontend) and Nest.js (backend)',
+			],
 		},
-		{
+		{ 
+      id: '2',
 			title: 'Eventpro - Ticketing Platform',
 			href: 'https://eventpro-ticketing-frontend.vercel.app/',
 			dates: '2024',
@@ -195,8 +207,15 @@ export const DATA = {
 				'Nodemailer',
 			],
 			links: [],
+			features: [
+				'An Highly Responsive, User-friendly Event Ticketing platform with separate CMS for agencies and admin, and an event CRM for creating and managing events, transaction and tickets.',
+				'Led the entire project lifecycle from initial planning and system design to full-stack development, including both frontend and backend components.',
+				'Integrated SSLcommerz as the payment gateway to facilitate secure online transactions and implemented PDF ticket generation with Puppeteer, incorporating email notifications with attached tickets using Nodemailer.',
+				'Enabled user-friendly ticket purchasing for registered and guest users, with options to download tickets directly from the platform.',
+			],
 		},
 		{
+      id: '3',
 			title: 'Fish & Meat Club',
 			href: 'https://www.fishnmeatclub.com/',
 			dates: '2023',
@@ -206,8 +225,15 @@ export const DATA = {
 				'E-commerce site with admin dashboard, animations, JWT auth, and full-stack REST APIs.',
 			technologies: ['Next.js', 'MongoDB', 'Chakra UI', 'Redux Toolkit'],
 			links: [],
+			features: [
+				'E-commerce solution with Responsive UI, Framer Motion animations and built an Admin Dashboard for streamlined product and order management.',
+				'Implemented JWT authentication for secure user login and Redux Toolkit for state management',
+				'Created RESTful APIs and managed MongoDB for backend operations and scalable data storage.',
+				'Deployed for production and maintained the website for optimal performance.',
+			],
 		},
 		{
+      id: '4',
 			title: 'Shohoz Air',
 			href: 'https://air.shohoz.com/',
 			dates: '2023',
@@ -217,8 +243,15 @@ export const DATA = {
 				'Flight booking platform with flight APIs, booking and payment system, admin CMS, and refund modules.',
 			technologies: ['React.js', 'Express.js', 'Sequelize', 'Joi'],
 			links: [],
+			features: [
+				'Contributed to integrating external flight API services.',
+				'Worked on the flight booking, reissuing, refunding, and payment systems.',
+				'Developed advanced flight data filtering, a dynamic Markup system, and a complete payment pipeline.',
+				'Built the backend and admin CMS for the platform.',
+			],
 		},
 		{
+      id: '5',
 			title: 'Bazar365',
 			href: 'https://www.bazar365.com/',
 			dates: '2023',
@@ -234,8 +267,15 @@ export const DATA = {
 				'Framer Motion',
 			],
 			links: [],
+			features: [
+				'Contributed to an e-commerce solution to enhance user engagement and performance.',
+				'Used Next.js, TypeScript, Chakra UI, for a responsive interface with customizable dark mode and fluid animations.',
+				'Integrated APIs and managed state with Redux toolkit.',
+				'Crafted visually appealing UI components to enhance the overall user experience.',
+			],
 		},
 		{
+      id: '6',
 			title: 'Scary Pacman',
 			href: 'https://aminulhaqueshihab.github.io/Scary-Pacman-game/',
 			dates: '2022',
@@ -245,6 +285,9 @@ export const DATA = {
 				'Fun browser game inspired by Pacman and Snake, built with vanilla JS, HTML, and CSS.',
 			technologies: ['HTML', 'CSS', 'JavaScript'],
 			links: [],
+			features: [
+				'This is a simple JavaScript-based game, inspired by Pacman and Snake game. It is developed using HTML, CSS, and JavaScript.',
+			],
 		},
 	],
 

@@ -11,6 +11,10 @@ import Markdown from 'react-markdown';
 
 const BLUR_FADE_DELAY = 0.04;
 
+function slugify(title: string) {
+	return title.toLowerCase().replace(/\s+/g, '-');
+}
+
 export default function Page() {
 	return (
 		<main className='flex flex-col min-h-[100dvh] space-y-10'>
@@ -154,16 +158,19 @@ export default function Page() {
 								key={project.title}
 								delay={BLUR_FADE_DELAY * 12 + id * 0.05}
 							>
-								<ProjectCard
-									href={project.href}
-									key={project.title}
-									title={project.title}
-									description={project.description}
-									dates={project.dates}
-									tags={project.technologies}
-									image={project?.image}
-									links={project?.links}
-								/>
+								<Link href={`/projects/${project.id}`} >
+									<ProjectCard
+										href={project.href}
+										key={project.title}
+										title={project.title}
+										description={project.description}
+										dates={project.dates}
+										tags={project.technologies}
+										image={project?.image}
+										images={project?.images}
+										links={project?.links}
+									/>
+								</Link>
 							</BlurFade>
 						))}
 					</div>
@@ -227,9 +234,9 @@ export default function Page() {
 								Get in Touch
 							</h2>
 							<p className='mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
-								Want to chat? or looking for a Software
-								Engineer in Sydney? I&apos;m available for opportunities in
-								Sydney and remote work. Connect with me on{' '}
+								Want to chat? or looking for a Software Engineer in Sydney?
+								I&apos;m available for opportunities in Sydney and remote work.
+								Connect with me on{' '}
 								<Link
 									href={DATA?.contact?.social?.LinkedIn?.url || ''}
 									target='_blank'
