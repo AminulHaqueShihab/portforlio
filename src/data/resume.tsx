@@ -41,8 +41,8 @@ export const DATA = {
 		// { href: '/blog', icon: NotebookIcon, label: 'Blog' },
 	],
 	contact: {
-		email: 'mdaminul.career@gmail.com',
-		tel: '+610432450337',
+		email: 'contact@aminulhaque.dev',
+		tel: '+61432450337',
 		social: {
 			Medium: {
 				name: 'Blog',
@@ -64,7 +64,7 @@ export const DATA = {
 			},
 			email: {
 				name: 'Send Email',
-				url: 'mailto:mdaminul.career@gmail.com',
+				url: 'mailto:contact@aminulhaque.dev',
 				icon: Icons.email,
 				navbar: false,
 			},
