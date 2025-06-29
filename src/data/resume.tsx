@@ -44,6 +44,12 @@ export const DATA = {
 		email: 'contact@aminulhaque.dev',
 		tel: '+61432450337',
 		social: {
+			Resume: {
+				name: 'Resume',
+				url: '/resume.pdf',
+				icon: Icons.resume,
+				navbar: true,
+			},
 			Medium: {
 				name: 'Blog',
 				url: 'https://medium.com/@aminul.haque.shihab',
@@ -293,6 +299,16 @@ export const DATA = {
 
 	hackathons: [],
 };
+
+
+
+
+
+
+
+
+
+
 
 // import { Icons } from "@/components/icons";
 // import { HomeIcon, NotebookIcon } from "lucide-react";
