@@ -48,18 +48,67 @@ import {
 	ArrowDownUp,
 	ArrowUp,
 	Eye,
+	Monitor,
 	MoreHorizontal,
+	Smartphone,
+	Tablet,
 	Trash2,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
-function formatVisitedAt(iso: string): string {
+function DeviceTypeCell({ deviceType }: { deviceType: string }) {
+	const key = deviceType.toLowerCase().trim();
+	let Icon = Monitor;
+	if (key === 'mobile') Icon = Smartphone;
+	else if (key === 'tablet') Icon = Tablet;
+
+	const label =
+		key === 'mobile' || key === 'tablet' || key === 'desktop'
+			? key.slice(0, 1).toUpperCase() + key.slice(1)
+			: (deviceType.trim() || 'Desktop');
+
+	return (
+		<span
+			className='inline-flex items-center justify-center'
+			title={label}>
+			<Icon className='h-4 w-4 text-muted-foreground' aria-hidden />
+			<span className='sr-only'>{label}</span>
+		</span>
+	);
+}
+
+function formatVisitedAtFull(iso: string): string {
 	try {
 		return format(parseISO(iso), 'MMM d, yyyy · h:mm aa');
 	} catch {
 		return iso;
 	}
+}
+
+/** Compact stamp for dense tables; hover `title` shows {@link formatVisitedAtFull}. */
+function formatVisitedAtShort(iso: string): string {
+	try {
+		return format(parseISO(iso), 'd/M/yy, h:mm a');
+	} catch {
+		return iso;
+	}
+}
+
+function deviceIdTableSuffix(id: string): string {
+	const t = id.trim();
+	if (!t) return '—';
+	if (t.length <= 5) return t;
+	return `...${t.slice(-5)}`;
+}
+
+/** First `headChars` + `..`, or `—` when empty. */
+function truncateTableLeading(label: string, headChars: number): string {
+	if (headChars < 1) return '—';
+	const t = label.trim();
+	if (!t || t === '—') return '—';
+	if (t.length <= headChars) return t;
+	return `${t.slice(0, headChars)}...`;
 }
 
 function buildPageNumbers(
@@ -95,13 +144,16 @@ function buildPageNumbers(
 
 function EllipsisText({
 	text,
+	title: titleProp,
 	className,
 }: {
 	text: string;
+	title?: string;
 	className?: string;
 }) {
+	const title = titleProp ?? text;
 	return (
-		<span className={className} title={text}>
+		<span className={className} title={title}>
 			{text}
 		</span>
 	);
@@ -133,7 +185,7 @@ function SortHeader({ label, column, active, order, onSort }: SortHeaderProps) {
 		<button
 			type='button'
 			onClick={() => onSort(column)}
-			className='inline-flex items-center rounded-md px-1 py-0.5 font-medium text-muted-foreground hover:bg-muted hover:text-foreground'>
+			className='inline-flex items-center rounded-md px-0.5 py-0.5 font-medium text-muted-foreground hover:bg-muted hover:text-foreground'>
 			{label}
 			<span className='sr-only'>
 				current sort{' '}
@@ -314,8 +366,8 @@ export default function VisitorsTable({
 			</div>
 
 			<div className='overflow-x-auto rounded-md border'>
-				<div className='min-w-[1340px]'>
-					<Table>
+				<div className='min-w-[1120px]'>
+					<Table className='[&_th]:!px-0.5 [&_th]:py-1.5 [&_td]:!px-0.5 [&_td]:py-1.5'>
 						<TableHeader>
 							<TableRow>
 								<TableHead className='w-10'>
@@ -375,7 +427,7 @@ export default function VisitorsTable({
 										onSort={toggleSort}
 									/>
 								</TableHead>
-								<TableHead>
+								{/* <TableHead>
 									<SortHeader
 										label='Browser'
 										column='browser'
@@ -383,7 +435,7 @@ export default function VisitorsTable({
 										order={sortOrder}
 										onSort={toggleSort}
 									/>
-								</TableHead>
+								</TableHead> */}
 								<TableHead>
 									<SortHeader
 										label='OS'
@@ -393,7 +445,7 @@ export default function VisitorsTable({
 										onSort={toggleSort}
 									/>
 								</TableHead>
-								<TableHead>
+								<TableHead className='text-center [&_button]:w-full [&_button]:justify-center'>
 									<SortHeader
 										label='Device'
 										column='deviceType'
@@ -402,7 +454,7 @@ export default function VisitorsTable({
 										onSort={toggleSort}
 									/>
 								</TableHead>
-								<TableHead>
+								<TableHead className='w-14 min-w-0 max-w-14 px-px text-center [&_button]:w-full [&_button]:justify-center'>
 									<SortHeader
 										label='Visits'
 										column='visitCount'
@@ -411,7 +463,7 @@ export default function VisitorsTable({
 										onSort={toggleSort}
 									/>
 								</TableHead>
-								<TableHead>
+								{/* <TableHead className='w-20 min-w-0 max-w-20 px-1 text-center [&_button]:w-full [&_button]:justify-center'>
 									<SortHeader
 										label='Path'
 										column='path'
@@ -419,8 +471,8 @@ export default function VisitorsTable({
 										order={sortOrder}
 										onSort={toggleSort}
 									/>
-								</TableHead>
-								<TableHead className='min-w-[165px]'>
+								</TableHead> */}
+								<TableHead className='w-min max-w-[12rem] whitespace-nowrap'>
 									<SortHeader
 										label='Visited at'
 										column='lastSeen'
@@ -429,7 +481,7 @@ export default function VisitorsTable({
 										onSort={toggleSort}
 									/>
 								</TableHead>
-								<TableHead className='w-[56px]' aria-label='Row actions'>
+								<TableHead className='w-10 min-w-10 max-w-10 !px-0 py-2' aria-label='Row actions'>
 									<span className='sr-only'>Actions</span>
 								</TableHead>
 							</TableRow>
@@ -437,7 +489,7 @@ export default function VisitorsTable({
 						<TableBody>
 							{rows.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={14} className='h-24 text-center'>
+									<TableCell colSpan={12} className='h-24 text-center'>
 										No visitor records matched your filters yet.
 									</TableCell>
 								</TableRow>
@@ -457,21 +509,33 @@ export default function VisitorsTable({
 											{baseIndex + idx + 1}
 										</TableCell>
 										<TableCell className='font-mono text-xs'>
-											<EllipsisText text={visitor.ip} className='block max-w-[160px] truncate' />
+											<EllipsisText text={visitor.ip} className='block max-w-[120px] truncate' />
 										</TableCell>
 										<TableCell className='font-mono text-xs'>
 											<EllipsisText
-												text={visitor.visitorDeviceId || '—'}
-												className='block max-w-[120px] truncate'
+												text={deviceIdTableSuffix(visitor.visitorDeviceId)}
+												title={
+													visitor.visitorDeviceId.trim()
+														? visitor.visitorDeviceId
+														: undefined
+												}
+												className='block max-w-[100px] truncate font-mono'
 											/>
 										</TableCell>
 										<TableCell>
-											<span className='inline-flex max-w-[200px] items-center gap-2'>
+											<span className='inline-flex max-w-[160px] items-center gap-1'>
 												<span className='text-lg' aria-hidden>
 													{countryCodeToFlagEmoji(visitor.countryCode)}
 												</span>
 												<EllipsisText
-													text={(visitor.country || visitor.countryCode || '—').toString()}
+													text={truncateTableLeading(
+														(visitor.country || visitor.countryCode || '—').toString(),
+														4
+													)}
+													title={
+														(visitor.country || visitor.countryCode || '')
+															.trim() || undefined
+													}
 													className='truncate'
 												/>
 											</span>
@@ -480,25 +544,47 @@ export default function VisitorsTable({
 											<EllipsisText text={visitor.city || '—'} className='block max-w-[140px] truncate' />
 										</TableCell>
 										<TableCell>
-											<EllipsisText text={visitor.isp || '—'} className='block max-w-[220px] truncate' />
+											<EllipsisText
+												text={truncateTableLeading(visitor.isp || '—', 4)}
+												title={(visitor.isp ?? '').trim() || undefined}
+												className='block max-w-[220px] truncate'
+											/>
 										</TableCell>
+										{/* <TableCell>
+											<EllipsisText
+												text={truncateTableLeading(visitor.browser || '—', 4)}
+												title={(visitor.browser ?? '').trim() || undefined}
+												className='block max-w-[180px] truncate'
+											/>
+										</TableCell> */}
 										<TableCell>
-											<EllipsisText text={visitor.browser || '—'} className='block max-w-[180px] truncate' />
+											<EllipsisText
+												text={truncateTableLeading(visitor.os || '—', 3)}
+												title={(visitor.os ?? '').trim() || undefined}
+												className='block max-w-[160px] truncate'
+											/>
 										</TableCell>
-										<TableCell>
-											<EllipsisText text={visitor.os || '—'} className='block max-w-[160px] truncate' />
+										<TableCell className='text-center'>
+											<DeviceTypeCell deviceType={visitor.deviceType} />
 										</TableCell>
-										<TableCell className='capitalize'>{visitor.deviceType}</TableCell>
-										<TableCell className='text-right tabular-nums font-medium'>
+										<TableCell className='w-14 min-w-0 max-w-14 px-px text-center tabular-nums text-sm font-medium'>
 											{visitor.visitCount.toLocaleString()}
 										</TableCell>
-										<TableCell>
-											<EllipsisText text={visitor.path || '—'} className='block max-w-[220px] truncate font-mono text-xs' />
+										{/* <TableCell className='w-20 min-w-0 max-w-20 px-1 text-center align-middle'>
+											<EllipsisText
+												text={visitor.path || '—'}
+												title={(visitor.path ?? '').trim() || undefined}
+												className='mx-auto block max-w-full truncate font-mono text-xs'
+											/>
+										</TableCell> */}
+										<TableCell
+											className='w-min max-w-[9rem] whitespace-nowrap pr-0.5'
+											title={formatVisitedAtFull(visitor.lastSeen)}>
+											<span className='text-[11px] tabular-nums leading-tight'>
+												{formatVisitedAtShort(visitor.lastSeen)}
+											</span>
 										</TableCell>
-										<TableCell className='whitespace-nowrap text-xs'>
-											{formatVisitedAt(visitor.lastSeen)}
-										</TableCell>
-										<TableCell className='w-[56px] text-right'>
+										<TableCell className='w-10 min-w-10 max-w-10 !pl-0 text-right'>
 											<DropdownMenu modal={false}>
 												<DropdownMenuTrigger asChild>
 													<Button
