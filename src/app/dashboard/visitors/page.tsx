@@ -67,6 +67,8 @@ export default function VisitorsPage() {
 					onPageChange={setPage}
 					sortBy={sortBy}
 					sortOrder={sortOrder}
+					isLoading={visitorsQuery.isLoading}
+					skeletonRowCount={LIMIT}
 					onSortChange={(col, ord) => {
 						setSortBy(col);
 						setSortOrder(ord);

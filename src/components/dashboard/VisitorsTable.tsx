@@ -36,6 +36,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { VisitorDetailDialog } from '@/components/dashboard/VisitorDetailDialog';
 import { countryCodeToFlagEmoji } from '@/lib/country-flag-emoji';
 import type { SortableVisitorKey, VisitorSerializable } from '@/lib/visitors-query';
@@ -196,6 +197,55 @@ function SortHeader({ label, column, active, order, onSort }: SortHeaderProps) {
 	);
 }
 
+const VISITOR_TABLE_COLUMN_COUNT = 12;
+
+function VisitorTableSkeletonRows({ rows }: { rows: number }) {
+	return (
+		<>
+			{Array.from({ length: rows }, (_, i) => (
+				<TableRow key={`visitor-skel-${i}`}>
+					<TableCell className='w-10'>
+						<Skeleton className='mx-auto size-4 rounded-sm' aria-hidden />
+					</TableCell>
+					<TableCell className='w-[44px]'>
+						<Skeleton className='mx-auto h-3 w-5' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='h-3 max-w-[100px]' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='h-3 w-12 font-mono' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='mx-auto h-4 w-[4.25rem]' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='h-3 max-w-[5rem]' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='h-3 max-w-[3.25rem]' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='h-3 max-w-[2rem]' aria-hidden />
+					</TableCell>
+					<TableCell className='text-center'>
+						<Skeleton className='mx-auto size-4 rounded-sm' aria-hidden />
+					</TableCell>
+					<TableCell className='text-center'>
+						<Skeleton className='mx-auto h-4 w-7' aria-hidden />
+					</TableCell>
+					<TableCell>
+						<Skeleton className='h-3 max-w-[5.5rem]' aria-hidden />
+					</TableCell>
+					<TableCell className='w-10 text-right'>
+						<Skeleton className='ml-auto size-9 rounded-md' aria-hidden />
+					</TableCell>
+				</TableRow>
+			))}
+		</>
+	);
+}
+
 export type VisitorsTableProps = {
 	baseIndex: number;
 	rows: VisitorSerializable[];
@@ -207,6 +257,8 @@ export type VisitorsTableProps = {
 	sortBy: SortableVisitorKey;
 	sortOrder: 'asc' | 'desc';
 	onSortChange: (column: SortableVisitorKey, order: 'asc' | 'desc') => void;
+	isLoading?: boolean;
+	skeletonRowCount?: number;
 };
 
 export default function VisitorsTable({
@@ -219,6 +271,8 @@ export default function VisitorsTable({
 	sortBy,
 	sortOrder,
 	onSortChange,
+	isLoading = false,
+	skeletonRowCount = 6,
 }: VisitorsTableProps) {
 	const [selected, setSelected] = useState<Set<string>>(() => new Set());
 	const [detailVisitor, setDetailVisitor] =
@@ -316,12 +370,18 @@ export default function VisitorsTable({
 		<div className='space-y-4'>
 			<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
 				<div className='text-sm text-muted-foreground'>
-					Showing{' '}
-					<span className='font-medium text-foreground'>
-						{total === 0 ? 0 : baseIndex + 1}–{baseIndex + rows.length}
-					</span>{' '}
-					of <span className='font-medium text-foreground'>{total}</span>
-					{selectedCount > 0 ? (
+					{isLoading ? (
+						<span className='text-muted-foreground'>Loading visitors…</span>
+					) : (
+						<>
+							Showing{' '}
+							<span className='font-medium text-foreground'>
+								{total === 0 ? 0 : baseIndex + 1}–{baseIndex + rows.length}
+							</span>{' '}
+							of <span className='font-medium text-foreground'>{total}</span>
+						</>
+					)}
+					{!isLoading && selectedCount > 0 ? (
 						<span className='ml-3 text-foreground'>
 							·{' '}
 							<span className='font-medium tabular-nums'>{selectedCount}</span>{' '}
@@ -334,7 +394,11 @@ export default function VisitorsTable({
 						type='button'
 						variant='outline'
 						className='gap-2 border-destructive/60 text-destructive hover:bg-destructive/10 hover:text-destructive'
-						disabled={selectedCount === 0 || bulkDeleteState.isLoading}
+						disabled={
+							selectedCount === 0 ||
+							bulkDeleteState.isLoading ||
+							isLoading
+						}
 						onClick={() => setBulkDeleteOpen(true)}>
 						<Trash2 className='h-4 w-4' />
 						Delete selected
@@ -365,13 +429,17 @@ export default function VisitorsTable({
 				</div>
 			</div>
 
-			<div className='overflow-x-auto rounded-md border'>
+			<div
+				className='overflow-x-auto rounded-md border'
+				aria-busy={isLoading}
+				aria-live='polite'>
 				<div className='min-w-[1120px]'>
 					<Table className='[&_th]:!px-0.5 [&_th]:py-1.5 [&_td]:!px-0.5 [&_td]:py-1.5'>
 						<TableHeader>
 							<TableRow>
 								<TableHead className='w-10'>
 									<Checkbox
+										disabled={isLoading}
 										aria-label='Select all on this page'
 										checked={
 											headerIndeterminate ? 'indeterminate' : headerChecked
@@ -487,9 +555,13 @@ export default function VisitorsTable({
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{rows.length === 0 ? (
+							{isLoading ? (
+								<VisitorTableSkeletonRows rows={6} />
+							) : rows.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={12} className='h-24 text-center'>
+									<TableCell
+										colSpan={VISITOR_TABLE_COLUMN_COUNT}
+										className='h-24 text-center'>
 										No visitor records matched your filters yet.
 									</TableCell>
 								</TableRow>
@@ -639,7 +711,7 @@ export default function VisitorsTable({
 				<PaginationContent className='flex-wrap'>
 					<PaginationItem>
 						<PaginationPrevious
-							disabled={page <= 1}
+							disabled={page <= 1 || isLoading}
 							onClick={() => {
 								onPageChange(page - 1);
 							}}
@@ -654,8 +726,11 @@ export default function VisitorsTable({
 								<PaginationLink
 									isActive={item === page}
 									size='default'
+									disabled={isLoading}
 									className='min-w-10'
-									onClick={() => onPageChange(item)}
+									onClick={() => {
+										if (!isLoading) onPageChange(item);
+									}}
 									aria-label={`Page ${item}`}>
 									{item}
 								</PaginationLink>
@@ -665,7 +740,7 @@ export default function VisitorsTable({
 
 					<PaginationItem>
 						<PaginationNext
-							disabled={page >= totalPages}
+							disabled={page >= totalPages || isLoading}
 							onClick={() => onPageChange(page + 1)}
 						/>
 					</PaginationItem>
