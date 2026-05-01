@@ -314,7 +314,7 @@ export default function VisitorsTable({
 			</div>
 
 			<div className='overflow-x-auto rounded-md border'>
-				<div className='min-w-[1260px]'>
+				<div className='min-w-[1340px]'>
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -334,6 +334,15 @@ export default function VisitorsTable({
 									<SortHeader
 										label='IP'
 										column='ip'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='Device ID'
+										column='visitorDeviceId'
 										active={sortBy}
 										order={sortOrder}
 										onSort={toggleSort}
@@ -428,7 +437,7 @@ export default function VisitorsTable({
 						<TableBody>
 							{rows.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={13} className='h-24 text-center'>
+									<TableCell colSpan={14} className='h-24 text-center'>
 										No visitor records matched your filters yet.
 									</TableCell>
 								</TableRow>
@@ -449,6 +458,12 @@ export default function VisitorsTable({
 										</TableCell>
 										<TableCell className='font-mono text-xs'>
 											<EllipsisText text={visitor.ip} className='block max-w-[160px] truncate' />
+										</TableCell>
+										<TableCell className='font-mono text-xs'>
+											<EllipsisText
+												text={visitor.visitorDeviceId || '—'}
+												className='block max-w-[120px] truncate'
+											/>
 										</TableCell>
 										<TableCell>
 											<span className='inline-flex max-w-[200px] items-center gap-2'>

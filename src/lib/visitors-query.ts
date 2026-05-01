@@ -4,6 +4,7 @@ const ALLOWED_SORT_KEYS = [
 	'visitedAt',
 	'lastSeen',
 	'ip',
+	'visitorDeviceId',
 	'country',
 	'city',
 	'browser',
@@ -20,6 +21,7 @@ export type SortableVisitorKey = (typeof ALLOWED_SORT_KEYS)[number];
 export type VisitorSerializable = {
 	id: string;
 	ip: string;
+	visitorDeviceId: string;
 	city: string;
 	region: string;
 	country: string;
@@ -86,7 +88,7 @@ export function parseVisitorQuery(request: Request): {
 export function searchFilter(term: string) {
 	const re = new RegExp(escapeRegExp(term), 'i');
 	return {
-		$or: [{ ip: re }, { country: re }, { city: re }],
+		$or: [{ ip: re }, { country: re }, { city: re }, { visitorDeviceId: re }],
 	};
 }
 
@@ -102,6 +104,7 @@ export function toSerializableVisitor(
 	return {
 		id: doc._id.toString(),
 		ip: String(doc.ip ?? ''),
+		visitorDeviceId: String(doc.visitorDeviceId ?? ''),
 		city: String(doc.city ?? ''),
 		region: String(doc.region ?? ''),
 		country: String(doc.country ?? ''),

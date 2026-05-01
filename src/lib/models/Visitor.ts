@@ -22,6 +22,7 @@ const visitorSchema = new Schema(
 		referrer: String,
 		language: String,
 		path: String,
+		visitorDeviceId: { type: String, maxlength: 36 },
 		visitedAt: { type: Date, required: true, index: true },
 		lastSeen: { type: Date, required: true, index: true },
 		visitCount: { type: Number, default: 1, min: 1 },
@@ -30,6 +31,7 @@ const visitorSchema = new Schema(
 );
 
 visitorSchema.index({ ip: 1, lastSeen: -1 });
+visitorSchema.index({ visitorDeviceId: 1, lastSeen: -1 }, { sparse: true });
 
 export type VisitorDocument = InferSchemaType<typeof visitorSchema> & {
 	_id: mongoose.Types.ObjectId;

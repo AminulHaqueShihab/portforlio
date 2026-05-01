@@ -23,10 +23,29 @@ export async function GET(request: NextRequest) {
 		Math.floor(Number(aggregate?.totalVisits ?? 0))
 	);
 
-	const uniqueIps = await Visitor.distinct<string>('ip');
-	const uniqueIpCountNum = Array.isArray(uniqueIps)
-		? uniqueIps.filter(Boolean).length
-		: 0;
+	const uniqueAgg = await Visitor.aggregate<{ c: number }>([
+		{
+			$project: {
+				key: {
+					$cond: {
+						if: {
+							$gt: [
+								{ $strLenCP: { $ifNull: ['$visitorDeviceId', ''] } },
+								0,
+							],
+						},
+						then: '$visitorDeviceId',
+						else: '$ip',
+					},
+				},
+			},
+		},
+		{ $group: { _id: '$key' } },
+		{ $count: 'c' },
+	]).exec();
+
+	const uniqueVisitorsNum =
+		uniqueAgg[0]?.c !== undefined ? Math.floor(Number(uniqueAgg[0].c)) : 0;
 
 	type CountryAgg = {
 		_id: { code: string; name: string };
@@ -84,7 +103,7 @@ export async function GET(request: NextRequest) {
 	const payload: VisitorStatsPayload = {
 		totalVisitorRecords,
 		totalVisits,
-		uniqueIpCount: uniqueIpCountNum,
+		uniqueVisitors: uniqueVisitorsNum,
 		topCountry,
 		topDeviceType: td ? { type: td._id, visits: td.visits } : null,
 		topBrowser: tb ? { browser: tb._id, visits: tb.visits } : null,

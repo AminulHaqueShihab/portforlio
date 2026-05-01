@@ -44,10 +44,13 @@ export function StatCards({ stats }: StatCardsProps) {
 			</Card>
 			<Card>
 				<CardHeader className='pb-2'>
-					<CardTitle className='text-sm font-medium'>Unique IPs</CardTitle>
+					<CardTitle className='text-sm font-medium'>Unique visitors</CardTitle>
 				</CardHeader>
 				<CardContent className='text-2xl font-semibold tabular-nums'>
-					{stats.uniqueIpCount.toLocaleString()}
+					{stats.uniqueVisitors.toLocaleString()}
+					<div className={muted}>
+						By anonymous device ID when available; else IP (legacy).
+					</div>
 				</CardContent>
 			</Card>
 			<Card>

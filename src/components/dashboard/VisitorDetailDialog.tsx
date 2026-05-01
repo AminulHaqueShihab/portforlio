@@ -22,6 +22,10 @@ function fmtDt(iso: string): string {
 const ROWS: { key: keyof VisitorSerializable; label: string }[] = [
 	{ key: 'id', label: 'Document ID' },
 	{ key: 'ip', label: 'IP' },
+	{
+		key: 'visitorDeviceId',
+		label: 'Anonymous device ID (first-party UUID)',
+	},
 	{ key: 'city', label: 'City' },
 	{ key: 'region', label: 'Region' },
 	{ key: 'country', label: 'Country' },

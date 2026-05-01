@@ -3,6 +3,7 @@ import Visitor from '@/lib/models/Visitor';
 import { getClientIp } from '@/lib/get-client-ip';
 import { lookupIpGeo } from '@/lib/ip-lookup';
 import { parseUserAgent } from '@/lib/parse-user-agent';
+import { sanitizeVisitorDeviceId } from '@/lib/visitor-device-id';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const DEDUP_MS = 30 * 60 * 1000;
@@ -21,44 +22,103 @@ function isMongoBadAuth(error: unknown): boolean {
 	return /authentication failed|bad auth/i.test(msg);
 }
 
+function legacyMissingDeviceClause() {
+	return {
+		$or: [
+			{ visitorDeviceId: { $exists: false } },
+			{ visitorDeviceId: null },
+			{ visitorDeviceId: '' },
+		],
+	};
+}
+
 export async function POST(request: NextRequest) {
 	try {
 		const body = (await request.json().catch(() => ({}))) as {
 			path?: string;
+			visitorDeviceId?: string;
 		};
 		const path =
 			typeof body.path === 'string' ? body.path.slice(0, 2048) : '/';
 
 		const ip = getClientIp(request);
 		const geo = await lookupIpGeo(ip);
+		const canonicalIp = geo.ip || ip;
 		const uaHeader = request.headers.get('user-agent');
 		const { browser, os, deviceType } = parseUserAgent(uaHeader);
 		const referrer = request.headers.get('referer') ?? '';
 		const language = request.headers.get('accept-language') ?? '';
+
+		const normalizedDeviceId = sanitizeVisitorDeviceId(body.visitorDeviceId);
 
 		await connectDB();
 
 		const now = new Date();
 		const cutoff = new Date(Date.now() - DEDUP_MS);
 
-		const existingDoc = await Visitor.findOne({
-			ip,
-			lastSeen: { $gte: cutoff },
-		}).sort({ lastSeen: -1 });
+		if (normalizedDeviceId) {
+			const byDevice = await Visitor.findOne({
+				visitorDeviceId: normalizedDeviceId,
+				lastSeen: { $gte: cutoff },
+			})
+				.sort({ lastSeen: -1 })
+				.exec();
 
-		if (existingDoc) {
-			await Visitor.updateOne(
-				{ _id: existingDoc._id },
-				{
-					$set: { lastSeen: now, path },
-					$inc: { visitCount: 1 },
-				}
-			);
-			return NextResponse.json({ ok: true, deduped: true });
+			if (byDevice) {
+				await Visitor.updateOne(
+					{ _id: byDevice._id },
+					{
+						$set: { lastSeen: now, path },
+						$inc: { visitCount: 1 },
+					}
+				);
+				return NextResponse.json({ ok: true, deduped: true });
+			}
+
+			const bridge = await Visitor.findOne({
+				ip: canonicalIp,
+				lastSeen: { $gte: cutoff },
+				...legacyMissingDeviceClause(),
+			})
+				.sort({ lastSeen: -1 })
+				.exec();
+
+			if (bridge) {
+				await Visitor.updateOne(
+					{ _id: bridge._id },
+					{
+						$set: {
+							visitorDeviceId: normalizedDeviceId,
+							lastSeen: now,
+							path,
+						},
+						$inc: { visitCount: 1 },
+					}
+				);
+				return NextResponse.json({ ok: true, deduped: true });
+			}
+		} else {
+			const byIp = await Visitor.findOne({
+				ip: canonicalIp,
+				lastSeen: { $gte: cutoff },
+			})
+				.sort({ lastSeen: -1 })
+				.exec();
+
+			if (byIp) {
+				await Visitor.updateOne(
+					{ _id: byIp._id },
+					{
+						$set: { lastSeen: now, path },
+						$inc: { visitCount: 1 },
+					}
+				);
+				return NextResponse.json({ ok: true, deduped: true });
+			}
 		}
 
 		await Visitor.create({
-			ip: geo.ip || ip,
+			ip: canonicalIp,
 			city: geo.city,
 			region: geo.region,
 			country: geo.country,
@@ -74,6 +134,7 @@ export async function POST(request: NextRequest) {
 			referrer,
 			language,
 			path,
+			...(normalizedDeviceId ? { visitorDeviceId: normalizedDeviceId } : {}),
 			visitedAt: now,
 			lastSeen: now,
 			visitCount: 1,
