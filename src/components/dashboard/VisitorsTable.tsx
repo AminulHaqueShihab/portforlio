@@ -1,0 +1,458 @@
+'use client';
+
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { countryCodeToFlagEmoji } from '@/lib/country-flag-emoji';
+
+import type { SortableVisitorKey, VisitorSerializable } from '@/lib/visitors-query';
+import {
+	ArrowDown,
+	ArrowDownUp,
+	ArrowUp,
+	LogOut,
+	Trash2,
+} from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import type { ReactNode } from 'react';
+
+function formatVisitedAt(iso: string): string {
+	try {
+		return format(parseISO(iso), 'MMM d, yyyy · h:mm aa');
+	} catch {
+		return iso;
+	}
+}
+
+function buildPageNumbers(
+	current: number,
+	totalPages: number
+): Array<number | 'ellipsis'> {
+	if (totalPages <= 7) {
+		return Array.from({ length: totalPages }, (_, i) => i + 1);
+	}
+
+	const items = new Set<number>();
+	items.add(1);
+	items.add(totalPages);
+	items.add(current);
+	items.add(current - 1);
+	items.add(current + 1);
+
+	const sorted = Array.from(items)
+		.filter((n) => n >= 1 && n <= totalPages)
+		.sort((a, b) => a - b);
+
+	const out: Array<number | 'ellipsis'> = [];
+	let prev = 0;
+
+	for (const n of sorted) {
+		if (prev && n - prev > 1) out.push('ellipsis');
+		out.push(n);
+		prev = n;
+	}
+
+	return out;
+}
+
+function EllipsisText({
+	text,
+	className,
+}: {
+	text: string;
+	className?: string;
+}) {
+	return (
+		<span className={className} title={text}>
+			{text}
+		</span>
+	);
+}
+
+type SortHeaderProps = {
+	label: string;
+	column: SortableVisitorKey;
+	active: SortableVisitorKey;
+	order: 'asc' | 'desc';
+	onSort: (column: SortableVisitorKey) => void;
+};
+
+function SortHeader({ label, column, active, order, onSort }: SortHeaderProps) {
+	const isActive = active === column;
+	let icon: ReactNode = (
+		<ArrowDownUp className='ml-1 inline h-3.5 w-3.5 text-muted-foreground' />
+	);
+	if (isActive) {
+		icon =
+			order === 'asc' ? (
+				<ArrowUp className='ml-1 inline h-3.5 w-3.5' />
+			) : (
+				<ArrowDown className='ml-1 inline h-3.5 w-3.5' />
+			);
+	}
+
+	return (
+		<button
+			type='button'
+			onClick={() => onSort(column)}
+			className='inline-flex items-center rounded-md px-1 py-0.5 font-medium text-muted-foreground hover:bg-muted hover:text-foreground'>
+			{label}
+			<span className='sr-only'>
+				current sort{' '}
+				{isActive ? (order === 'asc' ? 'ascending' : 'descending') : 'none'}
+			</span>
+			{icon}
+		</button>
+	);
+}
+
+export type VisitorsTableProps = {
+	baseIndex: number;
+	rows: VisitorSerializable[];
+	total: number;
+	page: number;
+	totalPages: number;
+	onPageChange: (next: number) => void;
+
+	sortBy: SortableVisitorKey;
+	sortOrder: 'asc' | 'desc';
+	onSortChange: (column: SortableVisitorKey, order: 'asc' | 'desc') => void;
+
+	onDeleteAllRequested: () => void | Promise<void>;
+	isDeleting: boolean;
+
+	onLogout: () => void;
+};
+
+export default function VisitorsTable({
+	baseIndex,
+	rows,
+	total,
+	page,
+	totalPages,
+	onPageChange,
+	sortBy,
+	sortOrder,
+	onSortChange,
+	onDeleteAllRequested,
+	isDeleting,
+	onLogout,
+}: VisitorsTableProps) {
+
+	function toggleSort(column: SortableVisitorKey) {
+		if (sortBy === column) {
+			onSortChange(column, sortOrder === 'asc' ? 'desc' : 'asc');
+			return;
+		}
+
+		const defaultDesc: SortableVisitorKey[] = ['visitedAt', 'lastSeen', 'visitCount'];
+		const nextOrder: 'asc' | 'desc' = defaultDesc.includes(column)
+			? 'desc'
+			: 'asc';
+		onSortChange(column, nextOrder);
+	}
+
+	const pageItems = buildPageNumbers(page, totalPages);
+
+	return (
+		<div className='space-y-4'>
+			<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+				<div className='text-sm text-muted-foreground'>
+					Showing{' '}
+					<span className='font-medium text-foreground'>
+						{total === 0 ? 0 : baseIndex + 1}–{baseIndex + rows.length}
+					</span>{' '}
+					of <span className='font-medium text-foreground'>{total}</span>
+				</div>
+				<div className='flex flex-wrap items-center gap-2'>
+					<Button
+						type='button'
+						variant='outline'
+						onClick={() => void onLogout()}
+						className='gap-2'>
+						<LogOut className='h-4 w-4' />
+						Log out
+					</Button>
+
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button
+								type='button'
+								variant='destructive'
+								className='gap-2'
+								disabled={isDeleting}>
+								<Trash2 className='h-4 w-4' />
+								Delete all
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Delete all visitor records?</AlertDialogTitle>
+								<AlertDialogDescription>
+									This permanently removes every stored visitor document from
+									MongoDB. This action cannot be undone.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel type='button'>Cancel</AlertDialogCancel>
+								<AlertDialogAction
+									type='button'
+									className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+									onClick={() => {
+										void Promise.resolve(onDeleteAllRequested());
+									}}>
+									Delete all
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+
+				</div>
+			</div>
+
+			<div className='overflow-x-auto rounded-md border'>
+				<div className='min-w-[1100px]'>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead className='w-[48px]' aria-label='Row number'>
+									#
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='IP'
+										column='ip'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='Country'
+										column='country'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='City'
+										column='city'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='ISP'
+										column='isp'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='Browser'
+										column='browser'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='OS'
+										column='os'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='Device'
+										column='deviceType'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='Referrer'
+										column='referrer'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead>
+									<SortHeader
+										label='Path'
+										column='path'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+								<TableHead className='min-w-[165px]'>
+									<SortHeader
+										label='Visited at'
+										column='visitedAt'
+										active={sortBy}
+										order={sortOrder}
+										onSort={toggleSort}
+									/>
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{rows.length === 0 ? (
+								<TableRow>
+									<TableCell colSpan={11} className='h-24 text-center'>
+										No visitor records matched your filters yet.
+									</TableCell>
+								</TableRow>
+							) : (
+								rows.map((visitor, idx) => (
+									<TableRow key={visitor.id}>
+										<TableCell className='text-muted-foreground'>
+											{baseIndex + idx + 1}
+										</TableCell>
+										<TableCell className='font-mono text-xs'>
+											<EllipsisText text={visitor.ip} className='block max-w-[160px] truncate' />
+										</TableCell>
+										<TableCell>
+											<span className='inline-flex max-w-[200px] items-center gap-2'>
+												<span className='text-lg' aria-hidden>
+													{countryCodeToFlagEmoji(visitor.countryCode)}
+												</span>
+												<EllipsisText
+													text={(visitor.country || visitor.countryCode || '—').toString()}
+													className='truncate'
+												/>
+											</span>
+										</TableCell>
+										<TableCell>
+											<EllipsisText text={visitor.city || '—'} className='block max-w-[140px] truncate' />
+										</TableCell>
+										<TableCell>
+											<EllipsisText text={visitor.isp || '—'} className='block max-w-[220px] truncate' />
+										</TableCell>
+										<TableCell>
+											<EllipsisText text={visitor.browser || '—'} className='block max-w-[180px] truncate' />
+										</TableCell>
+										<TableCell>
+											<EllipsisText text={visitor.os || '—'} className='block max-w-[160px] truncate' />
+										</TableCell>
+										<TableCell className='capitalize'>{visitor.deviceType}</TableCell>
+										<TableCell>
+											{visitor.referrer ? (
+												<a
+													className='block max-w-[220px] truncate text-primary underline-offset-4 hover:underline'
+													href={visitor.referrer}
+													target='_blank'
+													rel='noreferrer'>
+													<EllipsisText text={visitor.referrer} />
+												</a>
+											) : (
+												<span className='text-muted-foreground'>—</span>
+											)}
+										</TableCell>
+										<TableCell>
+											<EllipsisText text={visitor.path || '—'} className='block max-w-[220px] truncate font-mono text-xs' />
+										</TableCell>
+										<TableCell className='whitespace-nowrap text-xs'>
+											{formatVisitedAt(visitor.visitedAt)}
+										</TableCell>
+									</TableRow>
+								))
+							)}
+						</TableBody>
+					</Table>
+				</div>
+			</div>
+
+			<Pagination>
+				<PaginationContent className='flex-wrap'>
+					<PaginationItem>
+						<PaginationPrevious
+							disabled={page <= 1}
+							onClick={() => {
+								onPageChange(page - 1);
+							}}
+						/>
+					</PaginationItem>
+
+					{pageItems.map((item, idx) => (
+						<PaginationItem key={`${idx}-${item}`}>
+							{item === 'ellipsis' ? (
+								<PaginationEllipsis />
+							) : (
+								<PaginationLink
+									isActive={item === page}
+									size='default'
+									className='min-w-10'
+									onClick={() => onPageChange(item)}
+									aria-label={`Page ${item}`}>
+									{item}
+								</PaginationLink>
+							)}
+						</PaginationItem>
+					))}
+
+					<PaginationItem>
+						<PaginationNext
+							disabled={page >= totalPages}
+							onClick={() => onPageChange(page + 1)}
+						/>
+					</PaginationItem>
+				</PaginationContent>
+			</Pagination>
+
+			{totalPages > 7 ? (
+				<p className='text-xs text-muted-foreground'>
+					Pagination summarizes long ranges with ellipses. Current page{' '}
+					<span className='font-medium text-foreground'>
+						{page}
+					</span>{' '}
+					of{' '}
+					<span className='font-medium text-foreground'>
+						{totalPages}
+					</span>
+					.
+				</p>
+			) : null}
+		</div>
+	);
+}

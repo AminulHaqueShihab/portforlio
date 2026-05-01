@@ -1,5 +1,7 @@
 import Navbar from '@/components/navbar';
+import { ReduxProvider } from '@/components/redux-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import VisitorTracker from '@/components/VisitorTracker';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DATA } from '@/data/resume';
 import { cn } from '@/lib/utils';
@@ -259,12 +261,15 @@ export default function RootLayout({
 					fontSans.variable
 				)}
 			>
-				<ThemeProvider attribute='class' defaultTheme='light'>
-					<TooltipProvider delayDuration={0}>
-						{children}
-						<Navbar />
-					</TooltipProvider>
-				</ThemeProvider>
+				<ReduxProvider>
+					<ThemeProvider attribute='class' defaultTheme='light'>
+						<TooltipProvider delayDuration={0}>
+							<VisitorTracker />
+							{children}
+							<Navbar />
+						</TooltipProvider>
+					</ThemeProvider>
+				</ReduxProvider>
 			</body>
 		</html>
 	);
