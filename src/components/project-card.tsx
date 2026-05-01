@@ -29,6 +29,8 @@ interface Props {
 		href: string;
 	}[];
 	className?: string;
+	trackProjectTitle?: string;
+	trackProjectId?: string;
 }
 
 export function ProjectCard({
@@ -43,6 +45,8 @@ export function ProjectCard({
 	video,
 	links,
 	className,
+	trackProjectTitle,
+	trackProjectId,
 }: Props) {
 	// Carousel state
 	const [current, setCurrent] = useState(0);
@@ -142,7 +146,20 @@ export function ProjectCard({
 				{links && links.length > 0 && (
 					<div className='flex flex-row flex-wrap items-start gap-1'>
 						{links?.map((link, idx) => (
-							<Link href={link?.href} key={idx} target='_blank'>
+							<Link
+								href={link?.href}
+								key={idx}
+								target='_blank'
+								rel='noopener noreferrer'
+								{...(trackProjectTitle
+									? {
+											'data-track-project': trackProjectTitle,
+											...(trackProjectId
+												? { 'data-project-id': trackProjectId }
+												: {}),
+										}
+									: {})}
+							>
 								<Badge key={idx} className='flex gap-2 px-2 py-1 text-[10px]'>
 									{link.icon}
 									{link.type}

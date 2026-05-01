@@ -28,7 +28,11 @@ export function ProjectsSection({
 	blurFadeDelay,
 }: ProjectsSectionProps) {
 	return (
-		<section id='projects' aria-labelledby='projects-heading'>
+		<section
+			id='projects'
+			aria-labelledby='projects-heading'
+			data-section='projects'
+		>
 			<div className='space-y-12 w-full py-12'>
 				<BlurFade delay={blurFadeDelay * 11}>
 					<div className='flex flex-col items-center justify-center space-y-4 text-center'>
@@ -55,7 +59,11 @@ export function ProjectsSection({
 							key={project.title}
 							delay={blurFadeDelay * 12 + id * 0.05}
 						>
-							<Link href={`/projects/${project.id}`}>
+							<Link
+								href={`/projects/${project.id}`}
+								data-track-project={project.title}
+								data-project-id={project.id}
+							>
 								<ProjectCard
 									href={project.href}
 									key={project.title}
@@ -66,6 +74,8 @@ export function ProjectsSection({
 									image={project?.image}
 									images={project?.images}
 									links={project?.links}
+									trackProjectTitle={project.title}
+									trackProjectId={project.id}
 								/>
 							</Link>
 						</BlurFade>

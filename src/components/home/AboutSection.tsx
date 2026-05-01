@@ -12,7 +12,7 @@ interface AboutSectionProps {
  */
 export function AboutSection({ summary, blurFadeDelay }: AboutSectionProps) {
 	return (
-		<section id='about' aria-labelledby='about-heading'>
+		<section id='about' aria-labelledby='about-heading' data-section='about'>
 			<BlurFade delay={blurFadeDelay * 3}>
 				<h2 className='text-xl font-bold'>About</h2>
 			</BlurFade>

@@ -26,6 +26,8 @@ export default function ProjectsPage() {
 							key={project.id}
 							href={`/projects/${project.id}`}
 							className='block'
+							data-track-project={project.title}
+							data-project-id={project.id}
 						>
 							<ProjectCard
 								href={project.href}
@@ -36,6 +38,8 @@ export default function ProjectsPage() {
 								image={project?.image}
 								images={project?.images}
 								links={project?.links}
+								trackProjectTitle={project.title}
+								trackProjectId={project.id}
 							/>
 						</Link>
 					))}

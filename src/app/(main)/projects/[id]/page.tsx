@@ -38,7 +38,12 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 				{/* Back Button Row */}
 				<div className='flex items-center mb-2'>
 					<Link href='/#projects'>
-						<button className='w-6 h-6 flex items-center justify-center rounded bg-background border shadow hover:bg-muted transition'>
+						<button
+							type='button'
+							data-track-ignore
+							className='w-6 h-6 flex items-center justify-center rounded bg-background border shadow hover:bg-muted transition'
+							aria-label='Back to projects'
+						>
 							<ChevronLeft className='w-4 h-4' />
 						</button>
 					</Link>
@@ -57,6 +62,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 						{images.length > 1 && (
 							<>
 								<button
+									type='button'
+									data-track-ignore
 									onClick={prevImage}
 									className='absolute left-2 top-1/2 -translate-y-1/2 bg-background/50 rounded-full p-2 shadow hover:bg-background/90 transition'
 									aria-label='Previous image'
@@ -64,6 +71,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 									<ChevronsLeft className='w-4 h-4' />
 								</button>
 								<button
+									type='button'
+									data-track-ignore
 									onClick={nextImage}
 									className='absolute right-2 top-1/2 -translate-y-1/2 bg-background/50 rounded-full p-2 shadow hover:bg-background/90 transition'
 									aria-label='Next image'
@@ -117,6 +126,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 									key={idx}
 									target='_blank'
 									rel='noopener noreferrer'
+									data-track-project={project.title}
+									data-project-id={project.id}
 								>
 									<Badge className='flex gap-2 px-2 py-1 text-[10px]'>
 										{link.icon}
@@ -133,6 +144,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 								target='_blank'
 								rel='noopener noreferrer'
 								className='text-blue-500 hover:underline'
+								data-track-project={project.title}
+								data-project-id={project.id}
 							>
 								Visit Project ↗
 							</Link>

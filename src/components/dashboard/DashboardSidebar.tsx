@@ -10,12 +10,7 @@ import { usePathname, useRouter } from 'next/navigation';
 const navItems = [
 	{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 	{ href: '/dashboard/visitors', label: 'Visitors', icon: Users },
-	{
-		href: '/dashboard/click-events',
-		label: 'Click events',
-		icon: MousePointerClick,
-		soon: true,
-	},
+	{ href: '/dashboard/interactions', label: 'Interactions', icon: MousePointerClick },
 ];
 
 export function DashboardSidebar() {
@@ -41,7 +36,7 @@ export function DashboardSidebar() {
 				<h2 className='mt-1 text-lg font-semibold leading-tight'>Analytics</h2>
 			</div>
 			<nav aria-label='Dashboard sections' className='mt-6 flex flex-none gap-1 overflow-x-auto px-2 lg:flex-col lg:px-4'>
-				{navItems.map(({ href, label, icon: Icon, soon }) => {
+				{navItems.map(({ href, label, icon: Icon }) => {
 					const active =
 						href === '/dashboard'
 							? pathname === '/dashboard'
@@ -54,16 +49,10 @@ export function DashboardSidebar() {
 								'flex min-w-fit items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
 								active
 									? 'bg-background text-foreground shadow-sm'
-									: 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
-								soon && !active && 'opacity-80'
+									: 'text-muted-foreground hover:bg-background/70 hover:text-foreground'
 							)}>
 							<Icon className='h-4 w-4 shrink-0 opacity-70' aria-hidden />
 							<span className='whitespace-nowrap'>{label}</span>
-							{soon ? (
-								<span className='ml-1 rounded bg-muted px-1.5 py-0 text-[10px] font-semibold uppercase text-muted-foreground'>
-									Soon
-								</span>
-							) : null}
 						</Link>
 					);
 				})}

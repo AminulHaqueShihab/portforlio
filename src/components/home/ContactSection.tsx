@@ -17,7 +17,7 @@ export function ContactSection({
 	blurFadeDelay,
 }: ContactSectionProps) {
 	return (
-		<section id='contact' aria-labelledby='contact-heading'>
+		<section id='contact' aria-labelledby='contact-heading' data-section='contact'>
 			<div className='grid items-center justify-center gap-4 px-4 text-center md:px-6 w-full py-12'>
 				<BlurFade delay={blurFadeDelay * 16}>
 					<div className='space-y-3'>
