@@ -404,8 +404,8 @@ export default function VisitorsTable({
 								</TableHead>
 								<TableHead>
 									<SortHeader
-										label='Referrer'
-										column='referrer'
+										label='Visits'
+										column='visitCount'
 										active={sortBy}
 										order={sortOrder}
 										onSort={toggleSort}
@@ -423,7 +423,7 @@ export default function VisitorsTable({
 								<TableHead className='min-w-[165px]'>
 									<SortHeader
 										label='Visited at'
-										column='visitedAt'
+										column='lastSeen'
 										active={sortBy}
 										order={sortOrder}
 										onSort={toggleSort}
@@ -489,24 +489,14 @@ export default function VisitorsTable({
 											<EllipsisText text={visitor.os || '—'} className='block max-w-[160px] truncate' />
 										</TableCell>
 										<TableCell className='capitalize'>{visitor.deviceType}</TableCell>
-										<TableCell>
-											{visitor.referrer ? (
-												<a
-													className='block max-w-[220px] truncate text-primary underline-offset-4 hover:underline'
-													href={visitor.referrer}
-													target='_blank'
-													rel='noreferrer'>
-													<EllipsisText text={visitor.referrer} />
-												</a>
-											) : (
-												<span className='text-muted-foreground'>—</span>
-											)}
+										<TableCell className='text-right tabular-nums font-medium'>
+											{visitor.visitCount.toLocaleString()}
 										</TableCell>
 										<TableCell>
 											<EllipsisText text={visitor.path || '—'} className='block max-w-[220px] truncate font-mono text-xs' />
 										</TableCell>
 										<TableCell className='whitespace-nowrap text-xs'>
-											{formatVisitedAt(visitor.visitedAt)}
+											{formatVisitedAt(visitor.lastSeen)}
 										</TableCell>
 										<TableCell className='w-[56px] text-right'>
 											<DropdownMenu modal={false}>

@@ -17,7 +17,7 @@ export default function VisitorsPage() {
 	const [searchDraft, setSearchDraft] = useState('');
 	const debouncedSearch = useDebouncedValue(searchDraft, 300);
 
-	const [sortBy, setSortBy] = useState<SortableVisitorKey>('visitedAt');
+	const [sortBy, setSortBy] = useState<SortableVisitorKey>('lastSeen');
 	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
 	useEffect(() => {

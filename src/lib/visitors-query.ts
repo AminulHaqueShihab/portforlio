@@ -70,10 +70,10 @@ export function parseVisitorQuery(request: Request): {
 	if (!Number.isFinite(limit) || limit < 1) limit = 20;
 	limit = Math.min(limit, 100);
 
-	const sortCandidate = url.searchParams.get('sortBy') ?? 'visitedAt';
+	const sortCandidate = url.searchParams.get('sortBy') ?? 'lastSeen';
 	const sortBy = ALLOWED_SORT_KEYS.includes(sortCandidate as SortableVisitorKey)
 		? (sortCandidate as SortableVisitorKey)
-		: 'visitedAt';
+		: 'lastSeen';
 
 	const orderRaw =
 		url.searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc';
