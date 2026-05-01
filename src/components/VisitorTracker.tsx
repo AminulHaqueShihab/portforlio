@@ -13,12 +13,16 @@ export default function VisitorTracker() {
 		}
 
 		const visitorDeviceId = readOrCreateVisitorDeviceId();
+		const navigationReferrer =
+			typeof document !== 'undefined' ? document.referrer : '';
+
 		void fetch('/api/info', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				path: pathname,
 				...(visitorDeviceId ? { visitorDeviceId } : {}),
+				...(navigationReferrer ? { navigationReferrer } : {}),
 			}),
 			keepalive: true,
 		}).catch(() => null);

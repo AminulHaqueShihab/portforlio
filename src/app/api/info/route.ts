@@ -4,6 +4,7 @@ import { getClientIp } from '@/lib/get-client-ip';
 import { lookupIpGeo } from '@/lib/ip-lookup';
 import { parseUserAgent } from '@/lib/parse-user-agent';
 import { sanitizeVisitorDeviceId } from '@/lib/visitor-device-id';
+import { safeHttpReferrer } from '@/lib/safe-http-url';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const DEDUP_MS = 30 * 60 * 1000;
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
 		const body = (await request.json().catch(() => ({}))) as {
 			path?: string;
 			visitorDeviceId?: string;
+			navigationReferrer?: string;
 		};
 		const path =
 			typeof body.path === 'string' ? body.path.slice(0, 2048) : '/';
@@ -46,7 +48,11 @@ export async function POST(request: NextRequest) {
 		const canonicalIp = geo.ip || ip;
 		const uaHeader = request.headers.get('user-agent');
 		const { browser, os, deviceType } = parseUserAgent(uaHeader);
-		const referrer = request.headers.get('referer') ?? '';
+		const referrerFromNavigate = safeHttpReferrer(body.navigationReferrer);
+		const referrerFromFetchHeader = safeHttpReferrer(
+			request.headers.get('referer') ?? ''
+		);
+		const referrer = referrerFromNavigate || referrerFromFetchHeader;
 		const language = request.headers.get('accept-language') ?? '';
 
 		const normalizedDeviceId = sanitizeVisitorDeviceId(body.visitorDeviceId);
