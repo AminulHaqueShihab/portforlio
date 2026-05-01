@@ -3,18 +3,22 @@ import Visitor from '@/lib/models/Visitor';
 import { getClientIp } from '@/lib/get-client-ip';
 import { lookupIpGeo } from '@/lib/ip-lookup';
 import { parseUserAgent } from '@/lib/parse-user-agent';
-import { MongoServerError } from 'mongodb';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const DEDUP_MS = 30 * 60 * 1000;
 
 function isMongoBadAuth(error: unknown): boolean {
-	if (error instanceof MongoServerError) {
-		return error.code === 8000 || /bad auth/i.test(error.message ?? '');
+	const msg = error instanceof Error ? error.message : '';
+	const obj = error && typeof error === 'object' ? error : null;
+	const code = obj && 'code' in obj ? (obj as { code: unknown }).code : undefined;
+	const name =
+		obj && 'name' in obj && typeof (obj as { name: unknown }).name === 'string'
+			? (obj as { name: string }).name
+			: '';
+	if (code === 8000 || (name === 'MongoServerError' && /bad auth/i.test(msg))) {
+		return true;
 	}
-	return (
-		error instanceof Error && /authentication failed|bad auth/i.test(error.message)
-	);
+	return /authentication failed|bad auth/i.test(msg);
 }
 
 export async function POST(request: NextRequest) {
