@@ -1,115 +1,42 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { StatCards } from '@/components/dashboard/StatCards';
-import { TableFilters } from '@/components/dashboard/TableFilters';
-import VisitorsTable from '@/components/dashboard/VisitorsTable';
-import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import type { SortableVisitorKey } from '@/lib/visitors-query';
-import {
-	useDeleteAllVisitorsMutation,
-	useGetVisitorsQuery,
-	useGetVisitorStatsQuery,
-} from '@/store/visitorsApi';
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-const LIMIT = 20;
+import { RefreshCw } from 'lucide-react';
+import { useGetVisitorStatsQuery } from '@/store/visitorsApi';
 
 export default function DashboardHomePage() {
-	const router = useRouter();
-
-	const [page, setPage] = useState(1);
-	const [searchDraft, setSearchDraft] = useState('');
-	const debouncedSearch = useDebouncedValue(searchDraft, 300);
-
-	const [sortBy, setSortBy] = useState<SortableVisitorKey>('visitedAt');
-	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-	useEffect(() => {
-		setPage(1);
-	}, [debouncedSearch]);
-
-	const visitorsQuery = useGetVisitorsQuery({
-		page,
-		limit: LIMIT,
-		search: debouncedSearch,
-		sortBy,
-		sortOrder,
-	});
-
 	const statsQuery = useGetVisitorStatsQuery();
 
-	const [deleteAll, deleteState] = useDeleteAllVisitorsMutation();
-
-	const isRefreshing = visitorsQuery.isFetching || statsQuery.isFetching;
-
-	const baseIndex = useMemo(() => (page - 1) * LIMIT, [page]);
-
-	async function handleLogout() {
-		try {
-			await fetch('/api/auth/logout', {
-				method: 'POST',
-				credentials: 'include',
-			});
-			router.replace('/dashboard/login');
-			router.refresh();
-		} catch {
-			router.replace('/dashboard/login');
-		}
-	}
+	const isRefreshing = statsQuery.isFetching;
 
 	return (
 		<div className='space-y-10'>
-			<div className='space-y-2'>
-				<h1 className='text-3xl font-semibold tracking-tight'>
-					Visitor analytics
-				</h1>
-				<p className='max-w-prose text-sm text-muted-foreground'>
-					This dashboard summarizes portfolio traffic captured from the public API
-					route — data is intentionally excluded while you browse these admin
-					pages.
-				</p>
+			<div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+				<div className='space-y-2'>
+					<h1 className='text-3xl font-semibold tracking-tight'>
+						Dashboard
+					</h1>
+					<p className='max-w-prose text-sm text-muted-foreground'>
+						Summary metrics for tracked portfolio visits. Detailed rows and bulk
+						actions live under{' '}
+						<span className='font-medium text-foreground'>Visitors</span>.
+					</p>
+				</div>
+				<Button
+					type='button'
+					variant='outline'
+					className='shrink-0 gap-2 self-start'
+					onClick={() => void statsQuery.refetch()}
+					disabled={isRefreshing}>
+					<RefreshCw
+						className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+					/>
+					Refresh stats
+				</Button>
 			</div>
 
 			<StatCards stats={statsQuery.data} />
-
-			<div className='space-y-6'>
-				<TableFilters
-					value={searchDraft}
-					onChange={setSearchDraft}
-					onRefresh={() => {
-						void visitorsQuery.refetch();
-						void statsQuery.refetch();
-					}}
-					isRefreshing={isRefreshing}
-				/>
-
-				<VisitorsTable
-					baseIndex={baseIndex}
-					rows={visitorsQuery.data?.visitors ?? []}
-					total={visitorsQuery.data?.total ?? 0}
-					page={visitorsQuery.data?.page ?? page}
-					totalPages={visitorsQuery.data?.totalPages ?? 1}
-					onPageChange={setPage}
-					sortBy={sortBy}
-					sortOrder={sortOrder}
-					onSortChange={(col, ord) => {
-						setSortBy(col);
-						setSortOrder(ord);
-						setPage(1);
-					}}
-					onDeleteAllRequested={async () => {
-						try {
-							await deleteAll().unwrap();
-							setPage(1);
-						} catch {
-							// RTK exposes errors via mutationState for UI refinement later.
-						}
-					}}
-					isDeleting={deleteState.isLoading}
-					onLogout={handleLogout}
-				/>
-			</div>
 		</div>
 	);
 }

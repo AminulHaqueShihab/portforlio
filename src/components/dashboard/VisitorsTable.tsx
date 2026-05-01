@@ -9,9 +9,16 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
 	Pagination,
 	PaginationContent,
@@ -29,18 +36,23 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { VisitorDetailDialog } from '@/components/dashboard/VisitorDetailDialog';
 import { countryCodeToFlagEmoji } from '@/lib/country-flag-emoji';
-
 import type { SortableVisitorKey, VisitorSerializable } from '@/lib/visitors-query';
+import {
+	useBulkDeleteVisitorsMutation,
+	useDeleteVisitorMutation,
+} from '@/store/visitorsApi';
 import {
 	ArrowDown,
 	ArrowDownUp,
 	ArrowUp,
-	LogOut,
+	Eye,
+	MoreHorizontal,
 	Trash2,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import type { ReactNode } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 function formatVisitedAt(iso: string): string {
 	try {
@@ -143,11 +155,6 @@ export type VisitorsTableProps = {
 	sortBy: SortableVisitorKey;
 	sortOrder: 'asc' | 'desc';
 	onSortChange: (column: SortableVisitorKey, order: 'asc' | 'desc') => void;
-
-	onDeleteAllRequested: () => void | Promise<void>;
-	isDeleting: boolean;
-
-	onLogout: () => void;
 };
 
 export default function VisitorsTable({
@@ -160,10 +167,24 @@ export default function VisitorsTable({
 	sortBy,
 	sortOrder,
 	onSortChange,
-	onDeleteAllRequested,
-	isDeleting,
-	onLogout,
 }: VisitorsTableProps) {
+	const [selected, setSelected] = useState<Set<string>>(() => new Set());
+	const [detailVisitor, setDetailVisitor] =
+		useState<VisitorSerializable | null>(null);
+	const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+	const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+	const [singleDeleteTarget, setSingleDeleteTarget] =
+		useState<VisitorSerializable | null>(null);
+	const [singleDeleteOpen, setSingleDeleteOpen] = useState(false);
+
+	const [deleteOne, deleteOneState] = useDeleteVisitorMutation();
+	const [bulkDelete, bulkDeleteState] = useBulkDeleteVisitorsMutation();
+
+	const pageIds = useMemo(() => rows.map((r) => r.id), [rows]);
+
+	const headerChecked = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+	const headerIndeterminate =
+		pageIds.some((id) => selected.has(id)) && !headerChecked;
 
 	function toggleSort(column: SortableVisitorKey) {
 		if (sortBy === column) {
@@ -178,7 +199,66 @@ export default function VisitorsTable({
 		onSortChange(column, nextOrder);
 	}
 
+	const toggleSelected = useCallback((id: string, next: boolean) => {
+		setSelected((prev) => {
+			const n = new Set(prev);
+			if (next) n.add(id);
+			else n.delete(id);
+			return n;
+		});
+	}, []);
+
+	const toggleSelectPage = useCallback(
+		(checked: boolean) => {
+			setSelected((prev) => {
+				const n = new Set(prev);
+				if (checked) {
+					for (const id of pageIds) n.add(id);
+				} else {
+					for (const id of pageIds) n.delete(id);
+				}
+				return n;
+			});
+		},
+		[pageIds]
+	);
+
+	const selectedCount = selected.size;
 	const pageItems = buildPageNumbers(page, totalPages);
+
+	async function handleBulkDeleteConfirmed() {
+		const ids = Array.from(selected);
+		if (!ids.length) {
+			setBulkDeleteOpen(false);
+			return;
+		}
+		try {
+			await bulkDelete(ids).unwrap();
+			setSelected(new Set());
+		} catch {
+			//
+		} finally {
+			setBulkDeleteOpen(false);
+		}
+	}
+
+	async function handleSingleDeleteConfirmed() {
+		const v = singleDeleteTarget;
+		if (!v) return;
+		try {
+			await deleteOne(v.id).unwrap();
+			setSelected((prev) => {
+				const n = new Set(prev);
+				n.delete(v.id);
+				return n;
+			});
+		} catch {
+			//
+		} finally {
+			setSingleDeleteOpen(false);
+			window.setTimeout(() => setSingleDeleteTarget(null), 350);
+		}
+	}
 
 	return (
 		<div className='space-y-4'>
@@ -189,34 +269,34 @@ export default function VisitorsTable({
 						{total === 0 ? 0 : baseIndex + 1}–{baseIndex + rows.length}
 					</span>{' '}
 					of <span className='font-medium text-foreground'>{total}</span>
+					{selectedCount > 0 ? (
+						<span className='ml-3 text-foreground'>
+							·{' '}
+							<span className='font-medium tabular-nums'>{selectedCount}</span>{' '}
+							selected
+						</span>
+					) : null}
 				</div>
 				<div className='flex flex-wrap items-center gap-2'>
 					<Button
 						type='button'
 						variant='outline'
-						onClick={() => void onLogout()}
-						className='gap-2'>
-						<LogOut className='h-4 w-4' />
-						Log out
+						className='gap-2 border-destructive/60 text-destructive hover:bg-destructive/10 hover:text-destructive'
+						disabled={selectedCount === 0 || bulkDeleteState.isLoading}
+						onClick={() => setBulkDeleteOpen(true)}>
+						<Trash2 className='h-4 w-4' />
+						Delete selected
 					</Button>
-
-					<AlertDialog>
-						<AlertDialogTrigger asChild>
-							<Button
-								type='button'
-								variant='destructive'
-								className='gap-2'
-								disabled={isDeleting}>
-								<Trash2 className='h-4 w-4' />
-								Delete all
-							</Button>
-						</AlertDialogTrigger>
+					<AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
 						<AlertDialogContent>
 							<AlertDialogHeader>
-								<AlertDialogTitle>Delete all visitor records?</AlertDialogTitle>
+								<AlertDialogTitle>Delete selected visitors?</AlertDialogTitle>
 								<AlertDialogDescription>
-									This permanently removes every stored visitor document from
-									MongoDB. This action cannot be undone.
+									Permanently delete{' '}
+									<span className='font-semibold text-foreground'>
+										{selectedCount}
+									</span>{' '}
+									record(s) from MongoDB? This cannot be undone.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>
@@ -224,24 +304,30 @@ export default function VisitorsTable({
 								<AlertDialogAction
 									type='button'
 									className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-									onClick={() => {
-										void Promise.resolve(onDeleteAllRequested());
-									}}>
-									Delete all
+									onClick={() => void handleBulkDeleteConfirmed()}>
+									Delete
 								</AlertDialogAction>
 							</AlertDialogFooter>
 						</AlertDialogContent>
 					</AlertDialog>
-
 				</div>
 			</div>
 
 			<div className='overflow-x-auto rounded-md border'>
-				<div className='min-w-[1100px]'>
+				<div className='min-w-[1260px]'>
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead className='w-[48px]' aria-label='Row number'>
+								<TableHead className='w-10'>
+									<Checkbox
+										aria-label='Select all on this page'
+										checked={
+											headerIndeterminate ? 'indeterminate' : headerChecked
+										}
+										onCheckedChange={(v) => toggleSelectPage(v === true)}
+									/>
+								</TableHead>
+								<TableHead className='w-[44px]' aria-label='Row number'>
 									#
 								</TableHead>
 								<TableHead>
@@ -334,18 +420,30 @@ export default function VisitorsTable({
 										onSort={toggleSort}
 									/>
 								</TableHead>
+								<TableHead className='w-[56px]' aria-label='Row actions'>
+									<span className='sr-only'>Actions</span>
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{rows.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={11} className='h-24 text-center'>
+									<TableCell colSpan={13} className='h-24 text-center'>
 										No visitor records matched your filters yet.
 									</TableCell>
 								</TableRow>
 							) : (
 								rows.map((visitor, idx) => (
 									<TableRow key={visitor.id}>
+										<TableCell>
+											<Checkbox
+												aria-label={`Select ${visitor.ip}`}
+												checked={selected.has(visitor.id)}
+												onCheckedChange={(v) =>
+													toggleSelected(visitor.id, v === true)
+												}
+											/>
+										</TableCell>
 										<TableCell className='text-muted-foreground'>
 											{baseIndex + idx + 1}
 										</TableCell>
@@ -395,6 +493,49 @@ export default function VisitorsTable({
 										<TableCell className='whitespace-nowrap text-xs'>
 											{formatVisitedAt(visitor.visitedAt)}
 										</TableCell>
+										<TableCell className='w-[56px] text-right'>
+											<DropdownMenu modal={false}>
+												<DropdownMenuTrigger asChild>
+													<Button
+														type='button'
+														size='icon'
+														variant='ghost'
+														className='h-9 w-9'
+														disabled={deleteOneState.isLoading}
+														aria-label={`Actions for visitor ${visitor.ip}`}>
+														<MoreHorizontal className='h-4 w-4' />
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align='end' className='w-44'>
+													<DropdownMenuItem
+														className='gap-2'
+														onSelect={(e) => {
+															e.preventDefault();
+															window.setTimeout(() => {
+																setDetailVisitor(visitor);
+																setDetailDialogOpen(true);
+															}, 0);
+														}}>
+														<Eye className='h-4 w-4' />
+														View details
+													</DropdownMenuItem>
+													<DropdownMenuSeparator />
+													<DropdownMenuItem
+														className='gap-2 text-destructive focus:text-destructive'
+														disabled={deleteOneState.isLoading}
+														onSelect={(e) => {
+															e.preventDefault();
+															window.setTimeout(() => {
+																setSingleDeleteTarget(visitor);
+																setSingleDeleteOpen(true);
+															}, 0);
+														}}>
+														<Trash2 className='h-4 w-4' />
+														Delete…
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</TableCell>
 									</TableRow>
 								))
 							)}
@@ -443,15 +584,55 @@ export default function VisitorsTable({
 			{totalPages > 7 ? (
 				<p className='text-xs text-muted-foreground'>
 					Pagination summarizes long ranges with ellipses. Current page{' '}
-					<span className='font-medium text-foreground'>
-						{page}
-					</span>{' '}
-					of{' '}
-					<span className='font-medium text-foreground'>
-						{totalPages}
-					</span>
-					.
+					<span className='font-medium text-foreground'>{page}</span> of{' '}
+					<span className='font-medium text-foreground'>{totalPages}</span>.
 				</p>
+			) : null}
+
+			{(detailDialogOpen || detailVisitor !== null) ? (
+				<VisitorDetailDialog
+					visitor={detailVisitor}
+					open={detailDialogOpen}
+					onOpenChange={(next) => {
+						setDetailDialogOpen(next);
+						if (!next) {
+							window.setTimeout(() => setDetailVisitor(null), 350);
+						}
+					}}
+				/>
+			) : null}
+
+			{(singleDeleteOpen || singleDeleteTarget !== null) ? (
+				<AlertDialog
+					open={singleDeleteOpen}
+					onOpenChange={(next) => {
+						setSingleDeleteOpen(next);
+						if (!next) {
+							window.setTimeout(() => setSingleDeleteTarget(null), 350);
+						}
+					}}>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Delete this visitor?</AlertDialogTitle>
+							<AlertDialogDescription>
+								Remove this record for{' '}
+								<span className='font-mono font-medium text-foreground'>
+									{singleDeleteTarget?.ip}
+								</span>{' '}
+								permanently? This cannot be undone.
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel type='button'>Cancel</AlertDialogCancel>
+							<AlertDialogAction
+								type='button'
+								className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+								onClick={() => void handleSingleDeleteConfirmed()}>
+								Delete
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			) : null}
 		</div>
 	);

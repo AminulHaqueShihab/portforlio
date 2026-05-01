@@ -53,12 +53,30 @@ export const visitorsApi = createApi({
 			}),
 			providesTags: () => [{ type: 'VisitorStats', id: 'STATS' }] as const,
 		}),
-		deleteAllVisitors: build.mutation<void, void>({
-			query: () => ({
-				url: '/api/visitors',
+		deleteVisitor: build.mutation<void, string>({
+			query: (id) => ({
+				url: `/api/visitors/${encodeURIComponent(id)}`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: (_, error) =>
+			invalidatesTags: (_result, error, id) =>
+				error
+					? []
+					: [
+							{ type: 'Visitor', id },
+							{ type: 'Visitor', id: 'LIST' },
+							{ type: 'VisitorStats', id: 'STATS' },
+						],
+		}),
+		bulkDeleteVisitors: build.mutation<
+			{ ok: boolean; deletedCount: number },
+			string[]
+		>({
+			query: (ids) => ({
+				url: '/api/visitors/bulk-delete',
+				method: 'POST',
+				body: { ids },
+			}),
+			invalidatesTags: (_r, error) =>
 				error
 					? []
 					: [
@@ -73,5 +91,6 @@ export const {
 	useGetVisitorsQuery,
 	useGetVisitorStatsQuery,
 	useLazyGetVisitorsQuery,
-	useDeleteAllVisitorsMutation,
+	useDeleteVisitorMutation,
+	useBulkDeleteVisitorsMutation,
 } = visitorsApi;
